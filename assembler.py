@@ -100,6 +100,7 @@ class Assembler:
                 lines.remove(line)
 
 
+
     def extract_symbol(self, match):
         open = match.string.index('(')
         close = match.string.index(')')
@@ -109,6 +110,7 @@ class Assembler:
 
         for lines in self.files.items():
             self.first_pass(lines[1], lines[0])
+
 
 
 if __name__ == '__main__':
