@@ -1,6 +1,6 @@
+import os
 import re
 import sys
-import os
 from os.path import isfile, join
 
 # Regex Expressions:
@@ -14,41 +14,48 @@ SYMBOL = "\s*\(.*\)\s*"
 class Assembler:
 
     def __init__(self):
-        self.symbols = dict()
-        self.initialize_symbol_table(self.symbols)
 
         self.files = dict()
-        self.check_files()
+        self.parse_args()
+        # {files : [code_lines]}
+        # {files: {symbols}}
+        self.symbols = dict()
+        self.initialize_symbols()
 
-    def check_files(self):
+
+    def parse_args(self):
         # Check if directory:
         arg = sys.argv[1]
         if os.path.isdir(arg):
             # Take all files out of it:
-            self.files = {arg + "\\" + f:[] for f in os.listdir(arg) if isfile(join(arg, f))}
+            self.files = {arg + "\\" + f: [] for f in os.listdir(arg) if
+                          isfile(join(arg, f))}
         elif os.path.isfile(arg):
             self.files[arg] = []
         for file in self.files.keys():
-            self.parse_file(arg)
+            self.parse_file(file)
 
-    def parse_file(self,file:str):
+    def parse_file(self, file: str):
         lines = open(file, "r")
-        for _ in lines:
-            self.files[file].append(lines.readline())
-        print(self.files)
+        for line in lines:
+            # Remove comment lines, empty lines and comments:
+            if self.is_ignored(line):
+                continue
+            if self.is_comment_at_end(line):
+                line = self.remove_comment_at_end(line)
+            self.files[file].append(line)
 
 
-    # @24 //this is a comment
-
-    def is_ignored(self,line:str):
+    def is_ignored(self, line: str):
         """
 
         :param line:
         :return:
         """
-        return True if (re.match(COMMENT,line) or re.match(WHITESPACES,line)) else False
+        return True if (re.match(COMMENT, line) or re.match(WHITESPACES,
+                                                            line)) else False
 
-    def is_comment_at_end(self,line: str):
+    def is_comment_at_end(self, line: str):
         """
 
         :param line:
@@ -56,20 +63,18 @@ class Assembler:
         """
         return True if re.match(COMMENT_END_LINE, line) else False
 
-    def remove_comment_at_end(self,line:str):
+    def remove_comment_at_end(self, line: str):
         """
 
         :param line:
         :return:
         """
-        print(re.match(COMMENT_END_LINE, line).group(1))
+        return re.match(COMMENT_END_LINE, line).group(1)
 
-    def test_regexes(self,line:str):
+    def test_regexes(self, line: str):
         return True if re.match(SYMBOL, line) else False
 
-
-
-    def initialize_symbol_table(self,symbols:dict):
+    def initialize_symbol_table(self, symbols: dict):
         for i in range(15):
             symbols["R" + str(i)] = i
         symbols["SCREEN"] = 16384
@@ -80,28 +85,35 @@ class Assembler:
         symbols["THIS"] = 3
         symbols["THAT"] = 4
 
+    def initialize_symbols(self):
+        for filename in self.files.keys():
+            self.symbols[filename] = dict()
+        for file in self.symbols.keys():
+            self.initialize_symbol_table(self.symbols[file])
 
-    def first_pass(self,line:str):
-        # if re.match(SYMBOL, line):
-        pass
+    def first_pass(self, lines: list, filename: str):
+        for line_num, line in enumerate(lines):
+            match = re.match(SYMBOL, line)
+            if match:
+                res = self.extract_symbol(match)
+                self.symbols[filename][res] = line_num
+                lines.remove(line)
 
 
+    def extract_symbol(self, match):
+        open = match.string.index('(')
+        close = match.string.index(')')
+        return match.string[open + 1:close]
 
     def translate(self):
-        # self.first_pass(line)
-        pass
 
-
-
+        for lines in self.files.items():
+            self.first_pass(lines[1], lines[0])
 
 
 if __name__ == '__main__':
     a = Assembler()
-
-
-
-
-
+    a.translate()
 
 # Tests:
 # print(is_comment_at_end("  guyguy // oijoi  "))
