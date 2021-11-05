@@ -16,10 +16,11 @@ class Assembler:
 
     def __init__(self):
 
+        # Storing values will be in the form:
+        # the code:              {files : [code_lines]}
+        # symbols:               {files: {symbol:value}}
         self.files = dict()
         self.parse_args()
-        # {files : [code_lines]}
-        # {files: {symbols}}
         self.symbols = dict()
         self.initialize_symbols()
 
