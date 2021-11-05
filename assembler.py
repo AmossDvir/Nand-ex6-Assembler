@@ -2,6 +2,7 @@ import os
 import re
 import sys
 from os.path import isfile, join
+import numpy as np
 
 # Regex Expressions:
 
@@ -102,6 +103,9 @@ class Assembler:
         for line in lines_to_remove:
             lines.remove(line)
 
+        for line in lines:
+            print(line,end="")
+
 
 
     def extract_symbol(self, match):
@@ -120,6 +124,8 @@ class Assembler:
 if __name__ == '__main__':
     a = Assembler()
     a.translate()
+
+    # print(np.binary_repr(4,16))
 
 # Tests:
 # print(is_comment_at_end("  guyguy // oijoi  "))
