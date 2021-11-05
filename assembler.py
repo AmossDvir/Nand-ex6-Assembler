@@ -92,12 +92,15 @@ class Assembler:
             self.initialize_symbol_table(self.symbols[file])
 
     def first_pass(self, lines: list, filename: str):
+        lines_to_remove = []
         for line_num, line in enumerate(lines):
             match = re.match(SYMBOL, line)
             if match:
                 res = self.extract_symbol(match)
                 self.symbols[filename][res] = line_num
-                lines.remove(line)
+                lines_to_remove.append(line)
+        for line in lines_to_remove:
+            lines.remove(line)
 
 
 
@@ -107,6 +110,7 @@ class Assembler:
         return match.string[open + 1:close]
 
     def translate(self):
+
 
         for lines in self.files.items():
             self.first_pass(lines[1], lines[0])
